@@ -30,7 +30,7 @@ bash infra/up.sh
 
 | Servicio | Puerto host | URL |
 |---|---|---|
-| postgres | 54322 | `postgresql://postgres:postgres@localhost:54322/civicsys` |
+| postgres | 54330 | `postgresql://postgres:postgres@localhost:54330/civicsys` |
 | anvil | 8545 | `http://localhost:8545` (Chain ID 31337) |
 
 ## Cuentas Anvil pre-funded

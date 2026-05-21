@@ -22,7 +22,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-civicsys}
     ports:
-      - "${POSTGRES_PORT:-54322}:5432"
+      - "${POSTGRES_PORT:-54330}:5432"
     volumes:
       - ssca-postgres-data:/var/lib/postgresql/data
       - ./supabase/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro

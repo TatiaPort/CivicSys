@@ -40,5 +40,5 @@ fi
 
 echo ""
 echo "Infra arriba. Puertos:"
-echo "  postgres  → localhost:${POSTGRES_PORT:-54322}"
+echo "  postgres  → localhost:${POSTGRES_PORT:-54330}"
 echo "  anvil     → localhost:${ANVIL_PORT:-8545}"
