@@ -1,7 +1,7 @@
-# B-011 · Crear cliente viem para Rollux L2 en /lib/rolluxClient.ts
+# B-011 · Crear cliente viem para zkTanenbaum en /lib/zkTanenbaumClient.ts
 
 **id:** B-011
-**title:** Crear cliente viem para Rollux L2 en /lib/rolluxClient.ts
+**title:** Crear cliente viem para zkTanenbaum en /lib/zkTanenbaumClient.ts
 **owner:** [Responsable]
 **backup:** [Backup/Pair]
 **effort:** 15 min
@@ -14,28 +14,32 @@
 ---
 
 ## Por qué importa
-Permite interactuar con la blockchain Rollux L2 desde el backend.
+Permite interactuar con la blockchain zkSYS Testnet (zkTanenbaum, Chain ID 57057) desde el backend. Es la red destino del proyecto: una zkRollup-Validium sobre Syscoin L1.
 
 ## Conceptos clave
 - viem
-- Rollux L2
+- zkTanenbaum (Chain ID 57057, RPC https://rpc-zk.tanenbaum.io, símbolo TSYS)
 
 ## Pre-requisitos
 - viem instalado
-- .env configurado
+- .env configurado (`RPC_PRIMARY` apuntando a zkTanenbaum)
 
 ## Paso a paso
-1. Crear archivo /lib/rolluxClient.ts.
-2. Configurar cliente viem usando la URL de Rollux del .env.
+1. Crear archivo /lib/zkTanenbaumClient.ts.
+2. Definir la chain custom de zkTanenbaum (id 57057, símbolo TSYS, RPC desde `process.env.RPC_PRIMARY`).
+3. Crear el cliente viem (`createPublicClient`) y exportarlo para uso en servicios.
 
 ## Verificación / Definition of Done
-- Cliente funcional y exportado para uso en servicios.
+- Cliente funcional y exportado.
+- `await client.getChainId()` devuelve `57057`.
 
 ## Errores comunes
 - No leer la URL desde process.env.
+- Confundir zkTanenbaum con Rollux o NEVM — son redes distintas del mismo ecosistema Syscoin.
 
 ## Lecturas
 - https://viem.sh/docs/clients/
+- https://docs.syscoin.org/docs/syscoin-zk-rollups
 
 ## Notas para revisor
-- Confirmar que el cliente conecta correctamente a Rollux.
+- Confirmar que el cliente conecta correctamente a zkTanenbaum (`chainId === 57057`).

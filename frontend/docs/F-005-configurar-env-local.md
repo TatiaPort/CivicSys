@@ -14,11 +14,12 @@
 ---
 
 ## Por qué importa
-Permite separar datos sensibles y de entorno, como la URL RPC de Syscoin/Rollux.
+Permite separar datos sensibles y de entorno, como la URL RPC de zkTanenbaum (Syscoin).
 
 ## Paso a paso
 1. Crear archivo .env.local en la raíz del frontend.
-2. Agregar la variable NEXT_PUBLIC_RPC_URL con la URL correspondiente.
+2. Agregar `NEXT_PUBLIC_RPC_URL=https://rpc-zk.tanenbaum.io` (zkTanenbaum, Chain ID 57057).
+3. Agregar `NEXT_PUBLIC_CHAIN_ID=57057` para validar la red conectada desde el cliente.
 
 ## Definition of Done
 - .env.local creado y leído por Next.js.

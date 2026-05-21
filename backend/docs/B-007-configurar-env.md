@@ -1,7 +1,7 @@
-# B-007 · Configurar .env con RPC URL de Syscoin NEVM y Rollux
+# B-007 · Configurar .env con RPC URL de zkTanenbaum (primario + fallback)
 
 **id:** B-007
-**title:** Configurar .env con RPC URL de Syscoin NEVM y Rollux
+**title:** Configurar .env con RPC URL de zkTanenbaum (primario + fallback)
 **owner:** [Responsable]
 **backup:** [Backup/Pair]
 **effort:** 5 min
@@ -25,7 +25,7 @@ Permite separar y proteger las URLs de los nodos blockchain y otras variables se
 
 ## Paso a paso
 1. Crear archivo .env en la raíz de backend.
-2. Agregar variables para RPC URL de Syscoin NEVM y Rollux.
+2. Agregar `RPC_PRIMARY=https://rpc-zk.tanenbaum.io` y `RPC_FALLBACK=` (RPC alternativo de zkTanenbaum, si se consigue uno).
 
 ## Verificación / Definition of Done
 - Variables accesibles desde process.env.
