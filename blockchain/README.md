@@ -1,169 +1,69 @@
-# blockchain/ — Smart contracts CivicSys
+# blockchain/ — Smart contracts CivicSys / SSC ANTIPEREZA
 
 Contratos Solidity desplegados sobre **zkSYS Testnet (zkTanenbaum, Chain ID 57057)**, la edgechain de Syscoin basada en zkStack.
+
+## Contratos
+
+- **`CitizenRegistry.sol`** — registro on-chain de ciudadanos por hash de DNI (off-chain `keccak256(dni + PUBLIC_SALT)`).
+- **`Vote.sol`** — voto consultivo sobre una propuesta única preseeded en el constructor.
 
 ## Stack
 
 - **Solidity** 0.8.24
-- **Hardhat** + `hardhat-toolbox`
-- **ethers v6** + **TypeChain**
-- **OpenZeppelin Contracts** v5 (AccessControl, ReentrancyGuard)
+- **Hardhat 2** + `@nomicfoundation/hardhat-toolbox-viem` 3.0 (viem nativo, no ethers)
+- **TypeScript** 5.9 · **viem** 2.x · **chai** 4.x · **mocha**
+- **solidity-coverage** + **cross-env** (requerido por viem plugin)
+- **pnpm** (no npm — preferencia de seguridad)
 
-## Configuración de red
-
-`hardhat.config.ts`:
-
-```ts
-networks: {
-  zkTanenbaum: {
-    url: "https://rpc-zk.tanenbaum.io",
-    chainId: 57057,
-    accounts: [process.env.DEPLOYER_PRIVATE_KEY!],
-  },
-  hardhat: { chainId: 31337 },
-},
-etherscan: {
-  // Verificación contra el explorer de zkTanenbaum (cuando exponga API estándar)
-  customChains: [
-    {
-      network: "zkTanenbaum",
-      chainId: 57057,
-      urls: {
-        apiURL: "https://explorer-zk.tanenbaum.io/api",
-        browserURL: "https://explorer-zk.tanenbaum.io",
-      },
-    },
-  ],
-},
-```
-
-## Contratos de Sprint 1
-
-### `CitizenRegistry.sol`
-
-```solidity
-struct Citizen {
-    bytes32 id;              // keccak256(dni || normalized_name || salt)
-    string normalizedName;   // nombre upper, sin tildes
-    address wallet;          // wallet asociada (puede ser una smart account)
-    uint64  registeredAt;
-    bool    active;
-}
-
-event CitizenRegistered(bytes32 indexed id, address indexed wallet, uint64 timestamp);
-
-function register(bytes32 citizenId, string calldata normalizedName) external;
-function isRegistered(bytes32 citizenId) external view returns (bool);
-function getCitizen(bytes32 citizenId) external view returns (Citizen memory);
-```
-
-**Invariantes:**
-- Un `citizenId` solo puede registrarse una vez.
-- El `dni` en claro NUNCA se almacena.
-- El nombre se guarda normalizado (UPPER, sin tildes) para legibilidad pública.
-
-### `Vote.sol`
-
-```solidity
-enum ProposalStatus { Active, Closed, Cancelled }
-
-struct Proposal {
-    uint256 id;
-    string  title;
-    string  description;
-    string[] options;
-    uint64  createdAt;
-    uint64  deadline;
-    ProposalStatus status;
-    address curator;       // quien creó la propuesta
-}
-
-mapping(uint256 => mapping(bytes32 => uint8)) public votes;  // proposalId → citizenId → optionIdx
-mapping(uint256 => uint256[]) public tallies;                // proposalId → [count per option]
-
-event ProposalCreated(uint256 indexed id, address indexed curator, string title, uint64 deadline);
-event VoteCast(uint256 indexed proposalId, bytes32 indexed citizenId, uint8 option);
-event ProposalClosed(uint256 indexed proposalId, uint256[] tally, uint64 timestamp);
-
-function createProposal(string calldata title, string calldata description, string[] calldata options, uint64 deadline) external returns (uint256);
-function castVote(uint256 proposalId, uint8 optionIdx, bytes32 citizenId) external;
-function tally(uint256 proposalId) external view returns (uint256[] memory);
-function closeProposal(uint256 proposalId) external;   // solo curator o tras deadline
-```
-
-**Invariantes:**
-- Un ciudadano solo puede votar una vez por propuesta.
-- Solo ciudadanos registrados en `CitizenRegistry` pueden votar.
-- No se puede votar después del `deadline`.
-
-## Estructura
-
-```
-blockchain/
-├── contracts/
-│   ├── CitizenRegistry.sol
-│   ├── Vote.sol
-│   └── interfaces/
-│       ├── ICitizenRegistry.sol
-│       └── IVote.sol
-├── scripts/
-│   ├── deploy.ts              # despliega ambos contratos
-│   ├── seed-proposals.ts      # crea propuestas de prueba
-│   └── verify.ts
-├── test/
-│   ├── CitizenRegistry.test.ts
-│   ├── Vote.test.ts
-│   └── e2e.test.ts            # flujo completo en hardhat local
-├── deployments/
-│   └── zkTanenbaum.json       # direcciones del último deploy (commiteado)
-├── hardhat.config.ts
-├── package.json
-├── tsconfig.json
-└── .env.example
-```
-
-## Quick start
+## Setup
 
 ```bash
-npm install
-cp .env.example .env
-# editar .env y agregar DEPLOYER_PRIVATE_KEY (testnet, NUNCA mainnet)
-
-# compilar
-npx hardhat compile
-
-# tests
-npx hardhat test
-npx hardhat coverage
-
-# deploy a zkTanenbaum
-npx hardhat run scripts/deploy.ts --network zkTanenbaum
-
-# crear propuestas de prueba
-npx hardhat run scripts/seed-proposals.ts --network zkTanenbaum
+pnpm install
+pnpm compile
+pnpm test         # 23 unit + E2E tests
+pnpm test:ci      # tests + coverage hard-gate 80%
 ```
 
-## Variables de entorno (`.env`)
+Coverage actual (Sprint 1 cierre Bloque B):
+- Statements **100%** · Branches **96.88%** · Functions **100%** · Lines **100%**
 
-```dotenv
-# Wallet del deployer (cuenta de testnet — NUNCA usar mainnet aquí)
-DEPLOYER_PRIVATE_KEY=0x...
+## Deploy
 
-# RPC con fallback
-RPC_PRIMARY=https://rpc-zk.tanenbaum.io
-RPC_FALLBACK=
+### Local (Anvil)
 
-# Salt público (compartido con el servicio API)
-PUBLIC_SALT=ssc-antipereza-2026-publico
+Pre-requisito: Anvil corriendo (`bash ../infra/up.sh`).
+
+```bash
+pnpm exec hardhat run scripts/deploy-local.ts --network localhost
 ```
 
-## Faucet
+Side effects:
+- `deployments/localhost.json` con las addresses
+- `../shared/abis/{CitizenRegistry,Vote}.json` copiados desde `artifacts/`
 
-Solicitar TSYS al faucet oficial de zkTanenbaum. Si no responde, escalar a la Foundation vía el canal del hackathon.
+### zkTanenbaum testnet
 
-## Verificación post-deploy
+Pre-requisitos:
+- `DEPLOYER_PRIVATE_KEY` en `.env` con cuenta financiada del faucet
+- ≥0.05 TSYS de balance
 
-Tras el deploy:
-1. Las direcciones quedan en `deployments/zkTanenbaum.json`.
-2. Los ABIs se copian a `../shared/abis/` para que la API y Hermes los consuman.
-3. Subir el código a `explorer-zk.tanenbaum.io` para verificación pública.
+```bash
+pnpm exec hardhat run scripts/deploy-zktanenbaum.ts --network zkTanenbaum
+```
+
+## Redes configuradas
+
+| Red | Chain ID | RPC | Símbolo |
+|---|---|---|---|
+| `localhost` (Anvil) | 31337 | `http://localhost:8545` | ETH |
+| `zkTanenbaum` (testnet real) | 57057 | `https://rpc-zk.tanenbaum.io` | TSYS |
+
+> **Cuidado**: no confundir con Rollux (Chain ID 570) ni Syscoin NEVM (Chain ID 5700). Son redes diferentes del mismo ecosistema Syscoin.
+
+## Producto de cara al PPT
+
+> Concepto SSC ANTIPEREZA: *"La IA asesora. El ciudadano supervisa. El blockchain firma."*
+>
+> Esta capa = el **"blockchain firma"**. Sprint 1 cubre el escenario MVP: 1 propuesta, 3 opciones (Sí/No/Abstención), cierre por timestamp.
+
+Ver plan AEGIS: [`../docs/plans/tactica/sprint1-mvp/`](../docs/plans/tactica/sprint1-mvp/).
