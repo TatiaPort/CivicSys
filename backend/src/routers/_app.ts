@@ -1,15 +1,15 @@
-// backend/src/routers/_app.ts
-import { router } from '../trpc.js';
-import { blockchainRouter } from './blockchain/blockchain.router.js';
+import { initTRPC } from "@trpc/server";
+import type { Context } from "../context/trpc.context.js";
+import { proposalsRouter } from "./proposals.js";
+import { citizensRouter } from "./citizens.js";
+import { reportsRouter } from "./reports.js";
 
-export const appRouter = router({
-  // Aquí偏 acoplamos las rutas de la cadena
-  blockchain: blockchainRouter,
-  
-  // Si en el futuro creas un router de usuarios, lo pegarías aquí abajo:
-  // auth: authRouter,
+const t = initTRPC.context<Context>().create();
+
+export const appRouter = t.router({
+  proposals: proposalsRouter,
+  citizens: citizensRouter,
+  reports: reportsRouter,
 });
 
-// ¡MUY IMPORTANTE!: Exportar solo el TIPO del router. 
-// Esto es lo que usará Next.js para tener autocompletado mágico sin empaquetar código del backend.
 export type AppRouter = typeof appRouter;
